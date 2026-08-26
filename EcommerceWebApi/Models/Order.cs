@@ -13,7 +13,7 @@ namespace EcommerceWebApi.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CancelledAt { get; set; }
         public required int UserId { get; set; }
-        public required User User { get; set; }
+        public User? User { get; set; }
 
     }
 }
