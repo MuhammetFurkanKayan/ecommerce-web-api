@@ -12,6 +12,6 @@ namespace EcommerceWebApi.Models
         public int Stock { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public required int CategoryId { get; set; }
-        public required Category Category { get; set; }
+        public Category? Category { get; set; }
     }
 }
