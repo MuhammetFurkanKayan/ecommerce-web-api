@@ -1,5 +1,6 @@
 ﻿using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Models;
+using EcommerceWebApi.DTOs;
 
 namespace EcommerceWebApi.Services
 {
@@ -10,11 +11,15 @@ namespace EcommerceWebApi.Services
         {
             _repository = repository;
         }
-        public async Task<Category> CreateAsync(Category category)
+        public async Task<Category> CreateAsync(CategoryCreateDto category)
         {
-            await _repository.AddAsync(category);
+            var newCategory = new Category
+            {
+                Name = category.Name
+            };
+            await _repository.AddAsync(newCategory);
             await _repository.SaveAsync();
-            return category;
+            return newCategory;
         }
 
         public async Task DeleteAsync(int id)
@@ -45,7 +50,7 @@ namespace EcommerceWebApi.Services
         }
         
 
-        public async Task PatchAsync(int id, Category category)
+        public async Task PatchAsync(int id, CategoryPatchDto category)
         {
             var existingCategory = await _repository.GetByIdAsync(id);
             if (existingCategory == null)
@@ -62,17 +67,12 @@ namespace EcommerceWebApi.Services
             await _repository.SaveAsync();
         }
 
-        public async Task UpdateAsync(int id, Category category)
+        public async Task UpdateAsync(int id, CategoryUpdateDto category)
         {
             var existingCategory = await _repository.GetByIdAsync(id);
             if (existingCategory == null)
             {
                 throw new KeyNotFoundException($"Category with id {id} not found.");
-            }
-
-            if (category.Name == null)
-            {
-                throw new ArgumentException("Category name cannot be null.");
             }
 
             existingCategory.Name = category.Name;

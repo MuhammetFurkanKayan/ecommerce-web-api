@@ -3,6 +3,7 @@ using EcommerceWebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;
+using EcommerceWebApi.DTOs;
 
 namespace EcommerceWebApi.Controllers
 {
@@ -46,7 +47,7 @@ namespace EcommerceWebApi.Controllers
             }
         }
         [HttpPost]
-        public async Task<ActionResult<Category>> Create([FromBody] Category category)
+        public async Task<ActionResult<Category>> Create([FromBody] CategoryCreateDto category)
         {
             try
             {
@@ -59,7 +60,7 @@ namespace EcommerceWebApi.Controllers
             }
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromRoute]int id,[FromBody] Category category)
+        public async Task<ActionResult> Update([FromRoute]int id,[FromBody] CategoryUpdateDto category)
         {
             try 
             {
@@ -70,17 +71,13 @@ namespace EcommerceWebApi.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
         }
         [HttpPatch("{id}")]
-        public async Task<ActionResult> Patch([FromRoute] int id, [FromBody] Category category)
+        public async Task<ActionResult> Patch([FromRoute] int id, [FromBody] CategoryPatchDto category)
         {
             try
             {
@@ -90,10 +87,6 @@ namespace EcommerceWebApi.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {

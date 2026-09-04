@@ -1,0 +1,7 @@
+﻿namespace EcommerceWebApi.DTOs
+{
+    public class CategoryUpdateDto
+    {
+        public required string Name { get; set; }
+    }
+}
