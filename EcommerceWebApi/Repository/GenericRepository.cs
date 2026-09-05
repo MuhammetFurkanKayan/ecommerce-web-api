@@ -6,8 +6,8 @@ namespace EcommerceWebApi.Repository
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        public readonly AppDbContext _context;
-        public readonly DbSet<T> _dbSet;
+        private readonly AppDbContext _context;
+        private readonly DbSet<T> _dbSet;
 
         public GenericRepository(AppDbContext context)
         {

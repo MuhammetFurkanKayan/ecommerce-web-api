@@ -12,7 +12,7 @@ namespace EcommerceWebApi.Models
         public float TotalAmount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CancelledAt { get; set; }
-        public required int UserId { get; set; }
+        public int UserId { get; set; }
         public User? User { get; set; }
 
     }
