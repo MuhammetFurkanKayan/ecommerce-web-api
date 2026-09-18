@@ -10,6 +10,7 @@ namespace EcommerceWebApi.Models
         public int Id { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
         public float TotalAmount { get; set; }
+        public string ShippingAddress { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CancelledAt { get; set; }
         public int UserId { get; set; }
