@@ -92,5 +92,26 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpPost("{id}/cancel")]
+        public async Task<ActionResult> Cancel([FromRoute] int id)
+        {
+            try
+            {
+                await _orderService.CancelAsync(id);
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Models;
 using EcommerceWebApi.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceWebApi.Services
 {
@@ -117,5 +118,33 @@ namespace EcommerceWebApi.Services
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveAsync();
         }
+        
+        public async Task CancelAsync(int id)
+        {
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.OrderItems);
+            if (order == null)
+            {
+                throw new KeyNotFoundException($"Order with id {id} not found.");
+            }
+            if (order.Status != OrderStatus.Pending)
+            {
+                throw new ArgumentException($"Only pending orders can be cancelled.");
+            }
+
+            order.Status = OrderStatus.Cancelled;
+            foreach (var item in order.OrderItems)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
+                if (product == null)
+                {
+                    throw new KeyNotFoundException($"Product with id {item.ProductId} not found.");
+                }
+                product.Stock += item.Quantity;
+                await _productRepository.UpdateAsync(product);
+            }
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveAsync();
+        }
+
     }
 }
