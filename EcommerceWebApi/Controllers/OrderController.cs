@@ -113,5 +113,26 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpPatch("{id}/shipping-address")]
+        public async Task<ActionResult> UpdateShippingAddress([FromRoute] int id, [FromBody] UpdateOrderShippingAddressDto address)
+        {
+            try
+            {
+                await _orderService.ShippingAddressUpdateAsync(id, address);
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

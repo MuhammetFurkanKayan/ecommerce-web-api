@@ -1,5 +1,6 @@
 ﻿using EcommerceWebApi.DTOs;
 using EcommerceWebApi.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EcommerceWebApi.Interfaces
 {
@@ -10,5 +11,6 @@ namespace EcommerceWebApi.Interfaces
         Task<Order> CreateAsync(OrderCreateDto order);
         Task UpdateStatusAsync(int id, UpdateOrderStatusDto status);
         Task CancelAsync(int id);
+        Task ShippingAddressUpdateAsync(int id, UpdateOrderShippingAddressDto address);
     }
 }
