@@ -71,5 +71,26 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpPatch("{id}/status")]
+        public async Task<ActionResult> UpdateStatus([FromRoute] int id, [FromBody] UpdateOrderStatusDto status)
+        {
+            try
+            {
+                await _orderService.UpdateStatusAsync(id, status);
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

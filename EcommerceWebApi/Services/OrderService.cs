@@ -1,6 +1,7 @@
 ﻿using EcommerceWebApi.DTOs;
 using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Models;
+using EcommerceWebApi.Enums;
 
 namespace EcommerceWebApi.Services
 {
@@ -9,6 +10,13 @@ namespace EcommerceWebApi.Services
         private readonly IGenericRepository<Order> _orderRepository;
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IGenericRepository<User> _userRepository;
+        private static readonly Dictionary<OrderStatus, OrderStatus[]> _allowedTransitions = new()
+        {
+            { OrderStatus.Pending,    new[] { OrderStatus.Processing } },
+            { OrderStatus.Processing, new[] { OrderStatus.Shipped } },
+            { OrderStatus.Shipped,    new[] { OrderStatus.Delivered } },
+            { OrderStatus.Delivered,  Array.Empty<OrderStatus>() }
+        };
 
         public OrderService(IGenericRepository<Order> orderRepo, IGenericRepository<Product> productRepo, IGenericRepository<User> userRepo)
         {
@@ -87,5 +95,27 @@ namespace EcommerceWebApi.Services
             return order;
         }
 
+        public async Task UpdateStatusAsync(int id, UpdateOrderStatusDto status)
+        {
+            var order = await _orderRepository.GetByIdAsync(id);
+            if (order == null)
+            { 
+                throw new KeyNotFoundException($"Order with id {id} not found.");
+            }
+            if (status.Status == OrderStatus.Cancelled) 
+            {
+                throw new ArgumentException($"Cancelling an order is not supported through this endpoint.");
+            }
+            if (!_allowedTransitions.TryGetValue(order.Status, out var allowed) || !allowed.Contains(status.Status))
+            {
+                throw new ArgumentException(
+                    $"Invalid status transition from {order.Status} to {status.Status}. " +
+                    $"Valid transitions from {order.Status}: {string.Join(", ", allowed ?? Array.Empty<OrderStatus>())}");
+            }
+
+            order.Status = status.Status;
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveAsync();
+        }
     }
 }
