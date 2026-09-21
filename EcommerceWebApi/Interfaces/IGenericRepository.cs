@@ -1,4 +1,6 @@
-﻿namespace EcommerceWebApi.Interfaces
+﻿using System.Linq.Expressions;
+
+namespace EcommerceWebApi.Interfaces
 {
     public interface IGenericRepository<T> where T : class
     {
@@ -8,6 +10,7 @@
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
         Task SaveAsync();
+        Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
 
     }
 }

@@ -1,6 +1,7 @@
-﻿using EcommerceWebApi.Interfaces;
+﻿using EcommerceWebApi.Context;
+using EcommerceWebApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using EcommerceWebApi.Context;
+using System.Linq.Expressions;
 
 namespace EcommerceWebApi.Repository
 {
@@ -43,5 +44,14 @@ namespace EcommerceWebApi.Repository
         {
             _dbSet.Update(entity);
         }
+        public async Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet;
+            foreach (var include in includes)
+                query = query.Include(include);
+
+            return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+        }
+
     }
 }
