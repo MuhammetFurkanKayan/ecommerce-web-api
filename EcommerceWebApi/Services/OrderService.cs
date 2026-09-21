@@ -146,5 +146,21 @@ namespace EcommerceWebApi.Services
             await _orderRepository.SaveAsync();
         }
 
+        public async Task ShippingAddressUpdateAsync(int id, UpdateOrderShippingAddressDto address)
+        {
+            var order = await _orderRepository.GetByIdAsync(id);
+            if (order == null)
+            {
+                throw new KeyNotFoundException($"Order with id {id} not found.");
+            }
+            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Processing)
+            {
+                throw new ArgumentException($"Shipping address can only be updated for pending or processing orders.");
+            }
+            order.ShippingAddress = address.ShippingAddress;
+            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.SaveAsync();
+        }
+
     }
 }
