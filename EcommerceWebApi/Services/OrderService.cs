@@ -1,4 +1,4 @@
-﻿using EcommerceWebApi.DTOs;
+using EcommerceWebApi.DTOs;
 using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Models;
 using EcommerceWebApi.Enums;
@@ -83,12 +83,12 @@ namespace EcommerceWebApi.Services
         }
         public async Task<IEnumerable<Order>> GetAllAsync()
         {
-            return await _orderRepository.GetAllAsync();
+            return await _orderRepository.GetAllWithIncludesAsync(o => o.OrderItems);
         }
 
         public async Task<Order> GetByIdAsync(int id)
         {
-            var order = await _orderRepository.GetByIdAsync(id);
+            var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.OrderItems);
             if(order == null) 
             {
                 throw new KeyNotFoundException($"Order with id {id} not found.");

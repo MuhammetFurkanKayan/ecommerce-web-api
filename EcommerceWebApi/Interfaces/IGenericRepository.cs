@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 
 namespace EcommerceWebApi.Interfaces
 {
@@ -11,6 +11,6 @@ namespace EcommerceWebApi.Interfaces
         Task DeleteAsync(T entity);
         Task SaveAsync();
         Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
-
+        Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
     }
 }
