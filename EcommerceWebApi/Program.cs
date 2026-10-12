@@ -3,6 +3,8 @@ using EcommerceWebApi.Context;
 using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Services;
 using EcommerceWebApi.Repository;
+using Microsoft.AspNetCore.Identity;
+using EcommerceWebApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
