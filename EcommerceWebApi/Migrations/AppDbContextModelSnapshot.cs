@@ -173,7 +173,7 @@ namespace EcommerceWebApi.Migrations
                     b.HasOne("EcommerceWebApi.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -182,7 +182,7 @@ namespace EcommerceWebApi.Migrations
             modelBuilder.Entity("EcommerceWebApi.Models.OrderItem", b =>
                 {
                     b.HasOne("EcommerceWebApi.Models.Order", "Order")
-                        .WithMany()
+                        .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -190,7 +190,7 @@ namespace EcommerceWebApi.Migrations
                     b.HasOne("EcommerceWebApi.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -203,10 +203,15 @@ namespace EcommerceWebApi.Migrations
                     b.HasOne("EcommerceWebApi.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("EcommerceWebApi.Models.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

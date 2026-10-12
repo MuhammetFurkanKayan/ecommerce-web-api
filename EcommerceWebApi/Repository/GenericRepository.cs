@@ -60,5 +60,7 @@ namespace EcommerceWebApi.Repository
 
             return await query.ToListAsync();
         }
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+            => await _dbSet.AnyAsync(predicate);
     }
 }
