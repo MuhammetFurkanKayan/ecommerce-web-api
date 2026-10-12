@@ -9,10 +9,13 @@ namespace EcommerceWebApi.Services
     {
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IGenericRepository<Category> _categoryRepository;
-        public ProductService(IGenericRepository<Product> productRepo, IGenericRepository<Category> categoryRepo)
+        private readonly IGenericRepository<OrderItem> _orderItemRepository;
+        
+        public ProductService(IGenericRepository<Product> productRepo, IGenericRepository<Category> categoryRepo, IGenericRepository<OrderItem> orderItemRepo)
         {
             _productRepository = productRepo;
             _categoryRepository = categoryRepo;
+            _orderItemRepository = orderItemRepo;
         }
         public async Task<Product> CreateAsync(ProductCreateDto product)
         {
@@ -55,6 +58,10 @@ namespace EcommerceWebApi.Services
             if (product == null)
             {
                 throw new KeyNotFoundException($"Product with id {id} not found.");
+            }
+            if (await _orderItemRepository.AnyAsync(i => i.ProductId == id))
+            {
+                throw new InvalidOperationException("Product is used in orders and cannot be deleted.");
             }
             await _productRepository.DeleteAsync(product);
             await _productRepository.SaveAsync();

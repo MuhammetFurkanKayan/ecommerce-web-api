@@ -12,5 +12,6 @@ namespace EcommerceWebApi.Interfaces
         Task SaveAsync();
         Task<T?> GetByIdWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }
