@@ -62,5 +62,14 @@ namespace EcommerceWebApi.Repository
         }
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
             => await _dbSet.AnyAsync(predicate);
+        
+        public async Task<IEnumerable<T>> GetWhereWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+            foreach (var include in includes)
+            query = query.Include(include);
+
+            return await query.ToListAsync();
+        }
     }
 }

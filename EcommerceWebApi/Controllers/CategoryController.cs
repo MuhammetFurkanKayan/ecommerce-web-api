@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;
 using EcommerceWebApi.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EcommerceWebApi.Controllers
 {
@@ -46,6 +47,7 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<Category>> Create([FromBody] CategoryCreateDto category)
         {
@@ -59,6 +61,7 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update([FromRoute]int id,[FromBody] CategoryUpdateDto category)
         {
@@ -76,6 +79,7 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult> Patch([FromRoute] int id, [FromBody] CategoryPatchDto category)
         {
@@ -93,6 +97,7 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {

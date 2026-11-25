@@ -31,6 +31,17 @@ namespace EcommerceWebApi.Context
                 .HasOne(p => p.Category).WithMany()
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+                modelBuilder.Entity<User>(entity =>
+                {
+                entity.Property(u => u.Email).HasMaxLength(256);
+                entity.Property(u => u.UserName).HasMaxLength(50);
+
+                entity.HasIndex(u => u.Email).IsUnique();
+                entity.HasIndex(u => u.UserName).IsUnique();
+
+                entity.Property(u => u.Role).HasConversion<string>().HasMaxLength(20);
+                });
         }
     }
 }
