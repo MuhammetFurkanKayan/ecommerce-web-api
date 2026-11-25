@@ -1,0 +1,21 @@
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using EcommerceWebApi.Enums;
+
+namespace EcommerceWebApi.Models
+{
+  
+    public class Order
+    {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public float TotalAmount { get; set; }
+        public string ShippingAddress { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? CancelledAt { get; set; }
+        public int UserId { get; set; }
+        public User? User { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+
+    }
+}
