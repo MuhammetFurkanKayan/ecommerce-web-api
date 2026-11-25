@@ -1,6 +1,7 @@
 using EcommerceWebApi.DTOs;
 using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcommerceWebApi.Services
 {
@@ -8,11 +9,13 @@ namespace EcommerceWebApi.Services
     {
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<Order> _orderRepository;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public UserService(IGenericRepository<User> userRepository, IGenericRepository<Order> orderRepository)
+        public UserService( IGenericRepository<User> userRepository, IGenericRepository<Order> orderRepository, IPasswordHasher<User> passwordHasher)
         {
             _userRepository = userRepository;
             _orderRepository = orderRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
@@ -90,5 +93,57 @@ namespace EcommerceWebApi.Services
             Role = user.Role.ToString(),
             CreatedAt = user.CreatedAt
         };
+        public async Task ChangePasswordAsync(int id, UpdateUserPasswordDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with id {id} not found.");
+            }
+            var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.CurrentPassword);
+            if (verifyResult == PasswordVerificationResult.Failed)
+            {
+                throw new ArgumentException("Current password is incorrect.");
+            }
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+            {
+                throw new ArgumentException("New password cannot be empty.");
+            }
+            if (dto.CurrentPassword == dto.NewPassword)
+            {
+                throw new ArgumentException("New password must be different from current password.");
+            }
+            user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveAsync();
+        }
+        public async Task ChangeEmailAsync(int id, UpdateUserEmailDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with id {id} not found.");
+            }
+            var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.CurrentPassword);
+            if (verifyResult == PasswordVerificationResult.Failed)
+            {
+                throw new ArgumentException("Current password is incorrect.");
+            }
+            if (string.IsNullOrWhiteSpace(dto.NewEmail))
+            {
+                throw new ArgumentException("New email cannot be empty.");
+            }
+            if (user.Email == dto.NewEmail)
+            {
+                throw new ArgumentException("New email must be different from current email.");
+            }
+            if (await _userRepository.AnyAsync(u => u.Email == dto.NewEmail && u.Id != id))
+            {
+                throw new InvalidOperationException("Email is already in use.");
+            }
+            user.Email = dto.NewEmail;
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveAsync();
+        }
     }
 }

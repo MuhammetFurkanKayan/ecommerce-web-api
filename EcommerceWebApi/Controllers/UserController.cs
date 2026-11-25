@@ -144,5 +144,52 @@ namespace EcommerceWebApi.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpPost("me/change-password")]
+        public async Task<ActionResult> ChangePassword([FromBody] UpdateUserPasswordDto dto)
+        {
+            try
+            {
+                await _userService.ChangePasswordAsync(GetCurrentUserId(), dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("me/change-email")]
+        public async Task<ActionResult> ChangeEmail([FromBody] UpdateUserEmailDto dto)
+        {
+            try
+            {
+                await _userService.ChangeEmailAsync(GetCurrentUserId(), dto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
