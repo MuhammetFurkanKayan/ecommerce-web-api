@@ -2,7 +2,6 @@ using EcommerceWebApi.DTOs;
 using EcommerceWebApi.Interfaces;
 using EcommerceWebApi.Models;
 using EcommerceWebApi.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceWebApi.Services
 {
@@ -25,39 +24,41 @@ namespace EcommerceWebApi.Services
             _productRepository = productRepo;
             _userRepository = userRepo;
         }
-        public async Task<Order> CreateAsync(OrderCreateDto order)
+
+        public async Task<Order> CreateAsync(int userId, OrderCreateDto order)
         {
-            if (order.UserId<=0)
-            {
-                throw new ArgumentException("Invalid user id.");
-            }
-            var user = await _userRepository.GetByIdAsync(order.UserId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                throw new KeyNotFoundException($"User with id {order.UserId} not found.");
+                throw new KeyNotFoundException($"User with id {userId} not found.");
+            }
+
+            if (order.Items == null || order.Items.Count == 0)
+            {
+                throw new ArgumentException("Order must contain at least one item.");
             }
 
             var newOrder = new Order
             {
                 TotalAmount = 0,
-                UserId = order.UserId,
+                UserId = userId,
                 ShippingAddress = user.Address,
                 OrderItems = new List<OrderItem>()
             };
 
             foreach (var item in order.Items)
             {
-                if(item.Quantity <= 0)
+                if (item.Quantity <= 0)
                 {
                     throw new ArgumentException("Invalid order item quantity.");
                 }
-                if(item.ProductId <= 0)
+                if (item.ProductId <= 0)
                 {
                     throw new ArgumentException("Invalid order item product id.");
                 }
 
                 var product = await _productRepository.GetByIdAsync(item.ProductId);
-                if(product == null)
+                if (product == null)
                 {
                     throw new KeyNotFoundException($"Product with id {item.ProductId} not found.");
                 }
@@ -77,21 +78,32 @@ namespace EcommerceWebApi.Services
                 product.Stock -= item.Quantity;
                 await _productRepository.UpdateAsync(product);
             }
+
             await _orderRepository.AddAsync(newOrder);
             await _orderRepository.SaveAsync();
             return newOrder;
         }
+
         public async Task<IEnumerable<Order>> GetAllAsync()
         {
             return await _orderRepository.GetAllWithIncludesAsync(o => o.OrderItems);
         }
 
-        public async Task<Order> GetByIdAsync(int id)
+        public async Task<IEnumerable<Order>> GetByUserIdAsync(int userId)
+        {
+            return await _orderRepository.GetWhereWithIncludesAsync(o => o.UserId == userId, o => o.OrderItems);
+        }
+
+        public async Task<Order> GetByIdAsync(int id, int userId, bool isAdmin)
         {
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.OrderItems);
-            if(order == null) 
+            if (order == null)
             {
                 throw new KeyNotFoundException($"Order with id {id} not found.");
+            }
+            if (!isAdmin && order.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to view this order.");
             }
             return order;
         }
@@ -100,12 +112,12 @@ namespace EcommerceWebApi.Services
         {
             var order = await _orderRepository.GetByIdAsync(id);
             if (order == null)
-            { 
+            {
                 throw new KeyNotFoundException($"Order with id {id} not found.");
             }
-            if (status.Status == OrderStatus.Cancelled) 
+            if (status.Status == OrderStatus.Cancelled)
             {
-                throw new ArgumentException($"Cancelling an order is not supported through this endpoint.");
+                throw new ArgumentException("Cancelling an order is not supported through this endpoint.");
             }
             if (!_allowedTransitions.TryGetValue(order.Status, out var allowed) || !allowed.Contains(status.Status))
             {
@@ -118,20 +130,26 @@ namespace EcommerceWebApi.Services
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveAsync();
         }
-        
-        public async Task CancelAsync(int id)
+
+        public async Task CancelAsync(int id, int userId, bool isAdmin)
         {
             var order = await _orderRepository.GetByIdWithIncludesAsync(id, o => o.OrderItems);
             if (order == null)
             {
                 throw new KeyNotFoundException($"Order with id {id} not found.");
             }
+            if (!isAdmin && order.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to cancel this order.");
+            }
             if (order.Status != OrderStatus.Pending)
             {
-                throw new ArgumentException($"Only pending orders can be cancelled.");
+                throw new ArgumentException("Only pending orders can be cancelled.");
             }
 
             order.Status = OrderStatus.Cancelled;
+            order.CancelledAt = DateTime.UtcNow;
+
             foreach (var item in order.OrderItems)
             {
                 var product = await _productRepository.GetByIdAsync(item.ProductId);
@@ -142,25 +160,30 @@ namespace EcommerceWebApi.Services
                 product.Stock += item.Quantity;
                 await _productRepository.UpdateAsync(product);
             }
+
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveAsync();
         }
 
-        public async Task ShippingAddressUpdateAsync(int id, UpdateOrderShippingAddressDto address)
+        public async Task ShippingAddressUpdateAsync(int id, int userId, bool isAdmin, UpdateOrderShippingAddressDto address)
         {
             var order = await _orderRepository.GetByIdAsync(id);
             if (order == null)
             {
                 throw new KeyNotFoundException($"Order with id {id} not found.");
             }
+            if (!isAdmin && order.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to update this order.");
+            }
             if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Processing)
             {
-                throw new ArgumentException($"Shipping address can only be updated for pending or processing orders.");
+                throw new ArgumentException("Shipping address can only be updated for pending or processing orders.");
             }
+
             order.ShippingAddress = address.ShippingAddress;
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveAsync();
         }
-
     }
 }
